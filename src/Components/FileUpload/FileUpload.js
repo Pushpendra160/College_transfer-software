@@ -67,30 +67,41 @@ const FileUpload = () => {
 
   const mergeDataByCollege = (studentData, vacancyData) => {
     const mergedData = {};
-
+  
     for (const college in studentData) {
       if (studentData.hasOwnProperty(college)) {
         const students = studentData[college];
-        const matchingVacancy = vacancyData.find(
-          (vacancy) => vacancy["College Name"] === college
+        const hasEnrollmentNumbers = students.some(
+          (student) => student["Enrollment_No"] !== undefined
         );
-
-        if (matchingVacancy) {
-          students.forEach((student) => {
-            student["Vacancy"] = matchingVacancy["Vacancy"];
-          });
-        } else {
-          students.forEach((student) => {
-            student["Vacancy"] = null;
-          });
+  
+        if (hasEnrollmentNumbers) {
+          // Sort students within the college by 'Marks_Per' in descending order
+          students.sort((a, b) => b["Marks_Per"] - a["Marks_Per"]);
+  
+          const matchingVacancy = vacancyData.find(
+            (vacancy) => vacancy["College Name"] === college
+          );
+  
+          if (matchingVacancy) {
+            students.forEach((student) => {
+              student["Vacancy"] = matchingVacancy["Vacancy"];
+            });
+          } else {
+            students.forEach((student) => {
+              student["Vacancy"] = null;
+            });
+          }
+  
+          mergedData[college] = students;
         }
-
-        mergedData[college] = students;
       }
     }
-
+  
     return mergedData;
   };
+  
+  
 
   return (
     <div className="file-upload-container">
@@ -125,26 +136,22 @@ const FileUpload = () => {
               <tbody>
                 {/* Iterate through students in the current college */}
                 {studentsByCollege[college].map((student, studentIndex) => (
-  <tr key={studentIndex}>
-    <td>{student["Enrollment No"]}</td>
-    <td>{student["FirstName"]}</td>
-    <td>{student["Branch"]}</td>
-    <td>{student["Marks_Per"]}</td>
-    <td>{student["TransferCollege"]}</td>
-    <td>{student["Collegecode_transfer"]}</td>
-    <td>{student["Vacancy"]}</td> {/* Display vacancy data */}
-    {/* Add more data fields as needed */}
-  </tr>
+  // Add a filter to check if Enrollment No is defined
+  student["Enrollment_No"] !== undefined && student["Enrollment_No"] !== null && (
+    <tr key={studentIndex}>
+      <td>{student["Enrollment_No"]}</td>
+      <td>{student["FirstName"]}</td>
+      <td>{student["Branch"]}</td>
+      <td>{student["Marks_Per"]}</td>
+      <td>{student["TransferCollege"]}</td>
+      <td>{student["Collegecode_transfer"]}</td>
+      <td>{student["Vacancy"]}</td> {/* Display vacancy data */}
+      {/* Add more data fields as needed */}
+    </tr>
+  )
 ))}
-{/* Make sure that the keys you use in your code match the column headers exactly as they appear in your Excel file, including spaces and capitalization. */}
 
-
-
-
-
-
-
-              </tbody>
+ </tbody>
             </table>
           </div>
         ))}
